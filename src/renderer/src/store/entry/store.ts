@@ -1,6 +1,7 @@
 import { apiClient } from "@renderer/lib/api-fetch"
 import { getEntriesParams } from "@renderer/lib/utils"
 import type { EntryModel } from "@renderer/models"
+import { EntryService } from "@renderer/services/entity"
 import { produce } from "immer"
 import { merge, omit } from "lodash-es"
 
@@ -134,10 +135,12 @@ export const useEntryStore = createZustandStore<EntryState & EntryActions>(
             entry,
           )
 
-          const feeds = entries.map((entry) => entry.feeds)
-          // Insert to feed store
-          feedActions.upsertMany(feeds)
+          EntryService.create(entry.entries)
         }
+        const feeds = entries.map((entry) => entry.feeds)
+        // Insert to feed store
+        feedActions.upsertMany(feeds)
+
         return draft
       }),
     )
