@@ -47,7 +47,7 @@ interface UIActions {
 }
 const storageKey = buildStorageNS("ui")
 export const useUIStore = createZustandStore<UIState & UIActions>(storageKey, {
-  version: 1,
+  version: 2,
   storage: localStorage,
 })((set) => ({
   ...createDefaultUIState(),

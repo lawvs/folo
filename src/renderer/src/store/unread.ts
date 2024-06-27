@@ -25,7 +25,7 @@ interface UnreadActions {
 export const useUnreadStore = createZustandStore<UnreadState & UnreadActions>(
   "unread",
   {
-    version: 1,
+    version: 2,
   },
 )((set, get) => ({
   data: {},
