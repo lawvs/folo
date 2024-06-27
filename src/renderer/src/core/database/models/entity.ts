@@ -5,12 +5,12 @@ interface Entry {
   id: string
 }
 
-class EntryModelStatic extends BaseModel {
+class EntryModelStatic<T extends Entry> extends BaseModel<"entities", T> {
   constructor() {
     super("entities", DB_EntrySchema)
   }
 
-  async create<T extends Entry>(data: T) {
+  async create(data: T) {
     return this.table.add({
       ...data,
     })

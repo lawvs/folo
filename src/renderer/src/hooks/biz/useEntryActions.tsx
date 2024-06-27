@@ -2,7 +2,7 @@ import { apiClient } from "@renderer/lib/api-fetch"
 import { tipcClient } from "@renderer/lib/client"
 import { nextFrame } from "@renderer/lib/dom"
 import { shortcuts } from "@renderer/lib/shortcuts"
-import type { EntryPopulated } from "@renderer/models"
+import type { EntryModel, EntryPopulated } from "@renderer/models"
 import { useTipModal } from "@renderer/modules/wallet/hooks"
 import { entryActions } from "@renderer/store"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -97,11 +97,11 @@ export const useEntryActions = ({
   entry,
 }: {
   view?: number
-  entry?: EntryPopulated | null
+  entry?: EntryModel | null
 }) => {
   const checkEagle = useQuery({
     queryKey: ["check-eagle"],
-    enabled: !!entry?.entries.url && !!view,
+    enabled: !!entry?.url && !!view,
     queryFn: async () => {
       try {
         await ofetch("http://localhost:41595")

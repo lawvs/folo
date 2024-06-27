@@ -6,6 +6,7 @@ import { Outlet } from "react-router-dom"
 import { useDark } from "./hooks/common/useDark"
 import { useSettingModal } from "./modules/settings/modal/hooks"
 import { RootProviders } from "./providers/root-providers"
+import { hydrateDatabase } from "./store/utils/local"
 import { handlers } from "./tipc"
 
 function App() {

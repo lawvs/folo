@@ -1,6 +1,6 @@
 import { FEED_COLLECTION_LIST } from "@renderer/lib/constants"
 import type { FeedViewType } from "@renderer/lib/enum"
-import type { EntryPopulated } from "@renderer/models"
+import type { EntryModel, EntryPopulated } from "@renderer/models"
 import { useShallow } from "zustand/react/shallow"
 
 import { useFeedIdByView } from "../subscription"
@@ -10,7 +10,7 @@ interface EntryFilter {
   unread?: boolean
 }
 
-export const useEntry = (entryId: Nullable<string >): EntryPopulated | null =>
+export const useEntry = (entryId: Nullable<string >): EntryModel | null =>
   useEntryStore(useShallow((state) => entryId ? state.flatMapEntries[entryId] : null))
 // feedId: single feedId, multiple feedId joint by `,`, and `collections`
 export const useEntryIdsByFeedId = (feedId: string, filter?: EntryFilter) =>
@@ -38,9 +38,10 @@ export const useEntryIdsByFeedId = (feedId: string, filter?: EntryFilter) =>
           const result = [] as string[]
           for (const entryId of data) {
             const entry = state.flatMapEntries[entryId]
-            if (!entry?.read) {
-              result.push(entryId)
-            }
+            // TODO
+            // if (!entry?.read) {
+            //   result.push(entryId)
+            // }
           }
           return result
         }
@@ -64,9 +65,10 @@ export const useEntryIdsByView = (view: FeedViewType, filter?: EntryFilter) => {
         const result = [] as string[]
         for (const entryId of data) {
           const entry = state.flatMapEntries[entryId]
-          if (!entry?.read) {
-            result.push(entryId)
-          }
+          // TODO
+          // if (!entry?.read) {
+          //   result.push(entryId)
+          // }
         }
         return result
       }

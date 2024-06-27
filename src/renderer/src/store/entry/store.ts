@@ -1,7 +1,8 @@
 import { apiClient } from "@renderer/lib/api-fetch"
 import { getEntriesParams } from "@renderer/lib/utils"
-import type { EntryPopulated, FeedModel } from "@renderer/models"
+import type { EntryModel, EntryPopulated, FeedModel } from "@renderer/models"
 import { EntryService } from "@renderer/services/entity"
+import { defaultShouldDehydrateMutation } from "@tanstack/react-query"
 import { produce } from "immer"
 import { merge, omit } from "lodash-es"
 
@@ -18,10 +19,11 @@ export const useEntryStore = createZustandStore<EntryState & EntryActions>(
   "entry",
   {
     version: 2,
-
+    disablePersist: true,
     ...createStateTransformer({
       internal_feedId2entryIdSet: "set",
     }),
+
   },
 )((set, get) => ({
   entries: {},
@@ -36,6 +38,21 @@ export const useEntryStore = createZustandStore<EntryState & EntryActions>(
     })
   },
 
+  async hydrateDatabase() {
+    const dataList = await EntryService.findAll()
+
+    set((state) => {
+      const nextEntries = {} as Record<string, EntryModel>
+      for (const data of dataList) {
+        nextEntries[data.id] = data
+      }
+
+      return {
+        ...state,
+        flatMapEntries: nextEntries,
+      }
+    })
+  },
   fetchEntryById: async (entryId: string) => {
     const { data } = await apiClient.entries.$get({
       query: {
@@ -72,7 +89,7 @@ export const useEntryStore = createZustandStore<EntryState & EntryActions>(
     })
 
     if (data.data) {
-      get().upsertMany(data.data)
+      get().upsertMany(data.data.map((d) => d.entries))
     }
     return data
   },
@@ -80,7 +97,7 @@ export const useEntryStore = createZustandStore<EntryState & EntryActions>(
   getFlattenMapEntries() {
     return get().flatMapEntries
   },
-  optimisticUpdate(entryId: string, changed: Partial<EntryPopulated>) {
+  optimisticUpdate(entryId, changed) {
     set((state) =>
       produce(state, (draft) => {
         const entry = draft.flatMapEntries[entryId]
@@ -120,34 +137,35 @@ export const useEntryStore = createZustandStore<EntryState & EntryActions>(
       produce(state, (draft) => {
         const feeds = [] as FeedModel[]
         for (const entry of entries) {
-          if (!draft.entries[entry.feeds.id]) {
-            draft.entries[entry.feeds.id] = []
-          }
+          // if (!draft.entries[entry.feeds.id]) {
+          //   draft.entries[entry.feeds.id] = []
+          // }
 
-          if (!draft.internal_feedId2entryIdSet[entry.feeds.id]) {
-            draft.internal_feedId2entryIdSet[entry.feeds.id] = new Set()
-          }
+          // if (!draft.internal_feedId2entryIdSet[entry.feeds.id]) {
+          //   draft.internal_feedId2entryIdSet[entry.feeds.id] = new Set()
+          // }
 
-          if (
-            !draft.internal_feedId2entryIdSet[entry.feeds.id].has(
-              entry.entries.id,
-            )
-          ) {
-            draft.entries[entry.feeds.id].push(entry.entries.id)
-            draft.internal_feedId2entryIdSet[entry.feeds.id].add(
-              entry.entries.id,
-            )
-          }
+          // if (
+          //   !draft.internal_feedId2entryIdSet[entry.feeds.id].has(
+          //     entry.entries.id,
+          //   )
+          // ) {
+          //   draft.entries[entry.feeds.id].push(entry.entries.id)
+          //   draft.internal_feedId2entryIdSet[entry.feeds.id].add(
+          //     entry.entries.id,
+          //   )
+          // }
 
-          draft.flatMapEntries[entry.entries.id] = merge(
-            draft.flatMapEntries[entry.entries.id] || {},
-            entry,
-          )
+          // draft.flatMapEntries[entry.entries.id] = merge(
+          //   draft.flatMapEntries[entry.entries.id] || {},
+          //   entry,
+          // )
 
-          // Push feed
-          feeds.push(entry.feeds)
+          // // Push feed
+          // feeds.push(entry.feeds)
 
-          EntryService.create(entry.entries)
+          // EntryService.upsert(entry.entries)
+          EntryService.upsert(entry)
         }
 
         // Insert to feed store

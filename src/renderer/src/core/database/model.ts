@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/lobehub/lobe-chat/blob/adebf0a92167faad48581b0b0780cf8faeba362f/src/database/client/core/model.ts
  */
-/* eslint-disable unused-imports/no-unused-vars */
+
 import type Dexie from "dexie"
 import type { ZodObject } from "zod"
 
@@ -10,9 +10,11 @@ import { browserDB } from "./db"
 
 export class BaseModel<
   N extends keyof BrowserDBSchema = any,
-  T = BrowserDBSchema[N]["table"],
+  T extends { id: string } = any,
+  // T = BrowserDBSchema[N]["table"],
 > {
   protected readonly db: BrowserDB
+  // used to data validation, but use now
   private readonly schema: ZodObject<any>
   private readonly _tableName: keyof BrowserDBSchema
 
@@ -24,5 +26,9 @@ export class BaseModel<
 
   get table() {
     return this.db[this._tableName] as Dexie.Table
+  }
+
+  async upsert(data: T) {
+    return this.table.put(data)
   }
 }
