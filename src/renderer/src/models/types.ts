@@ -39,11 +39,14 @@ export type EntriesResponse = Array<
   >
 >[number]
 
-export type EntryModel = EntriesResponse[number] & {
+export type EntryPopulated = EntriesResponse[number] & {
   entries: {
     content?: string | null
   }
 }
+export type EntryModel = EntryPopulated["entries"]
+
+// export type
 export type DiscoverResponse = Array<
   Exclude<
     ExtractBizResponse<typeof apiClient.discover.$post>["data"],

@@ -1,5 +1,5 @@
 import type { apiClient } from "@renderer/lib/api-fetch"
-import type { EntryModel } from "@renderer/models"
+import type { EntryPopulated } from "@renderer/models"
 
 type FeedId = string
 type EntryId = string
@@ -13,7 +13,7 @@ export interface EntryState {
   /**
    * A map of entryId to entry
    */
-  flatMapEntries: Record<FeedId, EntryModel>
+  flatMapEntries: Record<FeedId, EntryPopulated>
   /**
    * A map of feedId to entryId set, to quickly check if an entryId is in the feed
    * The array is used to keep the order of the entries, and this set is used to quickly check if an entryId is in the feed
@@ -32,16 +32,16 @@ export interface EntryActions {
 
     pageParam?: string
   }) => Promise<Awaited<ReturnType<typeof apiClient.entries.$post>>>
-  fetchEntryById: (entryId: string) => Promise<EntryModel | undefined>
-  upsertMany: (entries: EntryModel[]) => void
+  fetchEntryById: (entryId: string) => Promise<EntryPopulated | undefined>
+  upsertMany: (entries: EntryPopulated[]) => void
 
-  optimisticUpdate: (entryId: string, changed: Partial<EntryModel>) => void
+  optimisticUpdate: (entryId: string, changed: Partial<EntryPopulated>) => void
   optimisticUpdateManyByFeedId: (
     feedId: string,
-    changed: Partial<EntryModel>
+    changed: Partial<EntryPopulated>
   ) => void
-  optimisticUpdateAll: (changed: Partial<EntryModel>) => void
-  getFlattenMapEntries: () => Record<string, EntryModel>
+  optimisticUpdateAll: (changed: Partial<EntryPopulated>) => void
+  getFlattenMapEntries: () => Record<string, EntryPopulated>
   markRead: (feedId: string, entryId: string, read: boolean) => void
   markReadByFeedId: (feedId: string) => void
 

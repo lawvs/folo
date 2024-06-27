@@ -4,7 +4,7 @@ import { LOCAL_DB_NAME } from "./constants"
 import {
   dbSchemaV1,
 } from "./db_schema"
-import type { DB_Entry } from "./schemas/Entry"
+import type { DB_Entry } from "./schemas/entry"
 import type { DBModel } from "./types"
 
 export interface LobeDBSchemaMap {

@@ -1,6 +1,6 @@
 import { apiClient } from "@renderer/lib/api-fetch"
 import { getEntriesParams } from "@renderer/lib/utils"
-import type { EntryModel, FeedModel } from "@renderer/models"
+import type { EntryPopulated, FeedModel } from "@renderer/models"
 import { EntryService } from "@renderer/services/entity"
 import { produce } from "immer"
 import { merge, omit } from "lodash-es"
@@ -73,7 +73,7 @@ export const useEntryStore = createZustandStore<EntryState & EntryActions>(
   getFlattenMapEntries() {
     return get().flatMapEntries
   },
-  optimisticUpdate(entryId: string, changed: Partial<EntryModel>) {
+  optimisticUpdate(entryId: string, changed: Partial<EntryPopulated>) {
     set((state) =>
       produce(state, (draft) => {
         const entry = draft.flatMapEntries[entryId]

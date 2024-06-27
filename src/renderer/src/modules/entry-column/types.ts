@@ -1,8 +1,8 @@
-import type { EntryModel, FeedModel } from "@renderer/models"
+import type { EntryPopulated, FeedModel } from "@renderer/models"
 
 export type UniversalItemProps = {
   entryId: string
-  entryPreview?: EntryModel & {
+  entryPreview?: EntryPopulated & {
     feeds: FeedModel
   }
   translation?: {
