@@ -290,6 +290,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.0
+      '@types/yieldable-json':
+        specifier: 2.0.2
+        version: 2.0.2
       '@vercel/ncc':
         specifier: 0.38.1
         version: 0.38.1
@@ -347,6 +350,9 @@ importers:
       vitest:
         specifier: 1.6.0
         version: 1.6.0(@types/node@20.14.7)
+      yieldable-json:
+        specifier: 2.0.1
+        version: 2.0.1
 
 packages:
 
@@ -2259,6 +2265,9 @@ packages:
 
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
+
+  '@types/yieldable-json@2.0.2':
+    resolution: {integrity: sha512-4Z1pTM2qrQjBtT2wNUvwR7oHW/efgVZKcNiNHOC0zvd9hcSr33CSzdlSSdiLySJwE0V+7P5+0RFtAnuYon5ZQg==}
 
   '@typescript-eslint/eslint-plugin@8.0.0-alpha.30':
     resolution: {integrity: sha512-2CBUupdkfbE3eATph4QeZejvT+M+1bVur+zXlVx09WN31phap51ps/qemeclnCbGEz6kTgBDmScrr9XmmF8/Pg==}
@@ -5843,6 +5852,10 @@ packages:
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
 
+  yieldable-json@2.0.1:
+    resolution: {integrity: sha512-kFDzXrWlXXt21MQPCul6gAMwwiLoz6XgCbQF+2qNChqdiZnc1SW3l/b/x/XzlZchG2iaVjDIDW5Fnz+sL+FbCw==}
+    engines: {node: '>= 4.0.0'}
+
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
@@ -7933,6 +7946,8 @@ snapshots:
     dependencies:
       '@types/node': 20.14.7
     optional: true
+
+  '@types/yieldable-json@2.0.2': {}
 
   '@typescript-eslint/eslint-plugin@8.0.0-alpha.30(@typescript-eslint/parser@8.0.0-alpha.30(eslint@9.5.0)(typescript@5.5.2))(eslint@9.5.0)(typescript@5.5.2)':
     dependencies:
@@ -12182,6 +12197,8 @@ snapshots:
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
+
+  yieldable-json@2.0.1: {}
 
   yocto-queue@0.1.0: {}
 
