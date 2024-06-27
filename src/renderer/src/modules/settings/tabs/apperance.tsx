@@ -23,6 +23,7 @@ export const SettingAppearance = () => {
   }, [])
 
   const state = useUIStore()
+  const onlyMacos = window.electron && getOS() === "macOS"
 
   return (
     <div>
@@ -33,7 +34,7 @@ export const SettingAppearance = () => {
         checked={isDark}
         onCheckedChange={saveDarkSetting}
       />
-      {window.electron && getOS() === "macOS" && (
+      {onlyMacos && (
         <SettingSwitch
           label="Opaque Sidebars"
           checked={state.opaqueSidebar}
@@ -43,9 +44,59 @@ export const SettingAppearance = () => {
         />
       )}
 
-      <SettingSectionTitle title="Text" />
-      {window.electron && <Fonts />}
+      <SettingSectionTitle title="UI" />
+
       <TextSize />
+      <SettingSectionTitle title="Display counts" />
+      {onlyMacos && (
+        <SettingSwitch
+          label="Dock Badge"
+          checked={state.showDockBadge}
+          onCheckedChange={(c) => {
+            uiActions.set("showDockBadge", c)
+          }}
+        />
+      )}
+      <SettingSwitch
+        label="Show sidebar unread count"
+        checked={state.sidebarShowUnreadCount}
+        onCheckedChange={(c) => {
+          uiActions.set("sidebarShowUnreadCount", c)
+        }}
+      />
+
+      {/* <SettingSwitch
+        label="Modal draggable"
+        checked={state.modalDraggable}
+        onCheckedChange={(c) => {
+          uiActions.set("modalDraggable", c)
+        }}
+      /> */}
+      {/* <SettingSwitch
+        label="Modal opaque"
+        checked={state.modalOpaque}
+        onCheckedChange={(c) => {
+          uiActions.set("modalOpaque", c)
+        }}
+      /> */}
+
+      <SettingSectionTitle title="Content" />
+      {window.electron && <Fonts />}
+      <SettingSwitch
+        label="Render inline style"
+        checked={state.readerRenderInlineStyle}
+        onCheckedChange={(c) => {
+          uiActions.set("readerRenderInlineStyle", c)
+        }}
+      />
+      <SettingSectionTitle title="Misc" />
+      <SettingSwitch
+        label="Show modal overlay"
+        checked={state.modalOverlay}
+        onCheckedChange={(c) => {
+          uiActions.set("modalOverlay", c)
+        }}
+      />
     </div>
   )
 }
@@ -59,7 +110,7 @@ const Fonts = () => {
     (state) => state.readerFontFamily || "SN Pro",
   )
   return (
-    <div className="-mt-1 flex items-center justify-between">
+    <div className="-mt-1 mb-3 flex items-center justify-between">
       <span className="shrink-0 text-sm font-medium">Font Family</span>
       <Select
         defaultValue="SN Pro"
@@ -68,7 +119,7 @@ const Fonts = () => {
           uiActions.set("readerFontFamily", value)
         }}
       >
-        <SelectTrigger className="h-8 w-48">
+        <SelectTrigger size="sm" className="w-48">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="h-64">
@@ -97,7 +148,7 @@ const TextSize = () => {
 
   return (
     <div className="mt-1 flex items-center justify-between">
-      <span className="shrink-0 text-sm font-medium">Text Size</span>
+      <span className="shrink-0 text-sm font-medium">UI Text Size</span>
       <Select
         defaultValue={textSizeMap.default.toString()}
         value={uiTextSize.toString() || textSizeMap.default.toString()}
@@ -108,12 +159,16 @@ const TextSize = () => {
           )
         }}
       >
-        <SelectTrigger className="h-8 w-24">
+        <SelectTrigger size="sm" className="w-24 capitalize">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {Object.entries(textSizeMap).map(([size, value]) => (
-            <SelectItem key={size} value={value.toString()}>
+            <SelectItem
+              className="capitalize"
+              key={size}
+              value={value.toString()}
+            >
               {size}
             </SelectItem>
           ))}

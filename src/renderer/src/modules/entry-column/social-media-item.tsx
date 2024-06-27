@@ -1,5 +1,6 @@
 import { FeedIcon } from "@renderer/components/feed-icon"
 import { Image } from "@renderer/components/ui/image"
+import { useAsRead } from "@renderer/hooks"
 import dayjs from "@renderer/lib/dayjs"
 import { cn } from "@renderer/lib/utils"
 import { useEntry } from "@renderer/store/entry/hooks"
@@ -11,11 +12,13 @@ import type { UniversalItemProps } from "./types"
 export function SocialMediaItem({ entryId, entryPreview, translation }: UniversalItemProps) {
   const entry = useEntry(entryId) || entryPreview
 
+  const asRead = useAsRead(entry)
+
   // NOTE: prevent 0 height element, react virtuoso will not stop render any more
   if (!entry) return <ReactVirtuosoItemPlaceholder />
   return (
-    <div className="flex w-full px-2 py-3">
-      <FeedIcon feed={entry.feeds} entry={entry.entries} />
+    <div className={cn("relative flex w-full py-3 pl-3 pr-2", !asRead && "before:absolute before:-left-0.5 before:top-[22px] before:block before:size-2 before:rounded-full before:bg-blue-500")}>
+      <FeedIcon feed={entry.feeds} entry={entry.entries} size={28} />
       <div className="min-w-0 flex-1">
         <div className="-mt-0.5 line-clamp-5 flex-1 text-sm">
           <div className="space-x-1">
@@ -33,7 +36,7 @@ export function SocialMediaItem({ entryId, entryPreview, translation }: Universa
           <div className={cn("relative mt-0.5", !!entry.collections && "pr-4")}>
             <EntryTranslation source={entry.entries.description} target={translation?.description} />
             {!!entry.collections && (
-              <i className="i-mgc-star-cute-fi absolute right-0 top-0.5 text-orange-400" />
+              <i className="i-mgc-star-cute-fi absolute right-0 top-1 text-orange-400" />
             )}
           </div>
         </div>

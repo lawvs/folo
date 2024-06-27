@@ -37,23 +37,28 @@ export const EntryContent = ({ entryId }: { entryId: ActiveEntryId }) => {
 }
 
 function EntryContentRender({ entryId }: { entryId: string }) {
-  const { error } = useBizQuery(Queries.entries.byId(entryId), {
+  const { error, data } = useBizQuery(Queries.entries.byId(entryId), {
     staleTime: 300_000,
   })
 
   const entry = useEntry(entryId)
-
   const [content, setContent] = useState<JSX.Element>()
-
+  const readerRenderInlineStyle = useUIStore(
+    (state) => state.readerRenderInlineStyle,
+  )
   useEffect(() => {
-    if (entry?.entries.content) {
-      parseHtml(entry?.entries.content).then((parsed) => {
+    // Fallback data, if local data is broken should fallback to cached query data.
+    const processContent = entry?.entries.content ?? data?.entries.content
+    if (processContent) {
+      parseHtml(processContent, {
+        renderInlineStyle: readerRenderInlineStyle,
+      }).then((parsed) => {
         setContent(parsed.content)
       })
     } else {
       setContent(undefined)
     }
-  }, [entry?.entries.content])
+  }, [data?.entries.content, entry?.entries.content, readerRenderInlineStyle])
 
   const translation = useBizQuery(
     Queries.ai.translation({
@@ -63,6 +68,8 @@ function EntryContentRender({ entryId }: { entryId: string }) {
     }),
     {
       enabled: !!entry?.settings?.translation,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     },
   )
 
@@ -73,6 +80,8 @@ function EntryContentRender({ entryId }: { entryId: string }) {
     }),
     {
       enabled: !!entry?.settings?.summary,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     },
   )
 

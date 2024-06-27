@@ -22,14 +22,17 @@ import {
 import { Switch } from "@renderer/components/ui/switch"
 import { ViewSelectContent } from "@renderer/components/view-select-content"
 import { useBizQuery } from "@renderer/hooks"
+import { useDeleteSubscription } from "@renderer/hooks/biz/useSubscriptionActions"
 import { apiClient } from "@renderer/lib/api-fetch"
 import { tipcClient } from "@renderer/lib/client"
+import { nextFrame } from "@renderer/lib/dom"
 import { FeedViewType } from "@renderer/lib/enum"
 import { cn } from "@renderer/lib/utils"
 import { Queries } from "@renderer/queries"
 import { useFeed } from "@renderer/queries/feed"
+import { unreadActions } from "@renderer/store"
 import { useMutation } from "@tanstack/react-query"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -103,11 +106,13 @@ export const FeedForm: Component<{
         tipcClient?.invalidateQuery(
           Queries.subscription.byView(feed.data?.subscription?.view).key,
         )
+        unreadActions.fetchUnreadByView(feed.data?.subscription?.view)
       }
       Queries.subscription.byView(Number.parseInt(variables.view)).invalidate()
       tipcClient?.invalidateQuery(
         Queries.subscription.byView(Number.parseInt(variables.view)).key,
       )
+      unreadActions.fetchUnreadByView(Number.parseInt(variables.view))
 
       const feedId = feed.data?.feed.id
       if (feedId) {
@@ -126,6 +131,16 @@ export const FeedForm: Component<{
     },
   })
 
+  const deleteSubscription = useDeleteSubscription({
+    onSuccess: () => {
+      if (!asWidget && !isSubscribed) {
+        window.close()
+      }
+
+      onSuccess?.()
+    },
+  })
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     followMutation.mutate(values)
   }
@@ -133,6 +148,11 @@ export const FeedForm: Component<{
   const categories = useBizQuery(
     Queries.subscription.categories(Number.parseInt(form.watch("view"))),
   )
+
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (feed.isSuccess) nextFrame(() => buttonRef.current?.focus())
+  }, [feed.isSuccess])
 
   return (
     <div
@@ -246,8 +266,24 @@ export const FeedForm: Component<{
                     )}
                   />
 
-                  <div className="flex flex-1 items-end justify-end">
+                  <div className="flex flex-1 items-end justify-end gap-4">
+                    {isSubscribed && (
+                      <StyledButton
+                        ref={buttonRef}
+                        isLoading={deleteSubscription.isPending}
+                        className="bg-red-500"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          if (feed.data?.subscription) {
+                            deleteSubscription.mutate(feed.data.subscription)
+                          }
+                        }}
+                      >
+                        Unfollow
+                      </StyledButton>
+                    )}
                     <StyledButton
+                      ref={buttonRef}
                       type="submit"
                       isLoading={followMutation.isPending}
                     >

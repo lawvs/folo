@@ -5,14 +5,13 @@ import { FEED_COLLECTION_LIST, levels, views } from "@renderer/lib/constants"
 import { stopPropagation } from "@renderer/lib/dom"
 import type { FeedViewType } from "@renderer/lib/enum"
 import { cn } from "@renderer/lib/utils"
-import type {
-  FeedListModel,
-} from "@renderer/models"
+import type { FeedListModel } from "@renderer/models"
 import { Queries } from "@renderer/queries"
 import type { SubscriptionPlainModel } from "@renderer/store"
 import {
   getFeedById,
   useSubscriptionByView,
+  useUIStore,
   useUnreadStore,
 } from "@renderer/store"
 import { useMemo, useState } from "react"
@@ -124,6 +123,7 @@ export function FeedList({
 
   const feedId = useRouteFeedId()
   const navigate = useNavigateEntry()
+  const showUnreadCount = useUIStore((state) => state.sidebarShowUnreadCount)
 
   return (
     <div className={cn(className, "font-medium")}>
@@ -166,7 +166,7 @@ export function FeedList({
       )}
       <div
         className={cn(
-          "flex h-8 w-full items-center rounded-md px-2.5 transition-colors",
+          "flex h-8 w-full shrink-0 items-center rounded-md px-2.5 transition-colors",
           feedId === FEED_COLLECTION_LIST && "bg-native-active",
         )}
         onClick={(e) => {
@@ -187,6 +187,7 @@ export function FeedList({
       {data?.list?.length ?
         sortedByUnread?.map((category) => (
           <FeedCategory
+            showUnreadCount={showUnreadCount}
             key={category.name}
             data={category}
             view={view}
@@ -199,7 +200,7 @@ export function FeedList({
                 to="/discover"
                 className="-mt-36 flex h-full flex-1 flex-col items-center justify-center gap-2"
               >
-                <i className="i-mgc-add-cute-re text-3xl " />
+                <i className="i-mgc-add-cute-re text-3xl" />
                 Add some feeds
               </Link>
             </div>

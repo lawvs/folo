@@ -38,6 +38,8 @@ function EntryItemImpl({ entry, view }: { entry: EntryModel, view?: number }) {
     }),
     {
       enabled: !!entry.settings?.translation,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     },
   )
 
@@ -119,10 +121,9 @@ function EntryItemImpl({ entry, view }: { entry: EntryModel, view?: number }) {
       <div
         className={cn(
           "rounded-md bg-theme-background transition-colors",
-          !views[view || 0].wideMode &&
           isActive &&
           "bg-theme-item-active",
-          asRead ? "text-zinc-500/90" : "text-zinc-900 dark:text-white/90",
+          asRead ? "text-zinc-700" : "text-zinc-900 dark:text-white/90",
         )}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}

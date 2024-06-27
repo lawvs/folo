@@ -1,13 +1,14 @@
 import { del, get, set } from "idb-keyval"
 import { enableMapSet } from "immer"
 import superjson from "superjson" //  can use anything: serialize-javascript, devalue, etc.
-import type { StateCreator } from "zustand"
+import type { StateCreator, StoreApi } from "zustand"
 import type {
   PersistOptions,
   PersistStorage,
 } from "zustand/middleware"
 import { persist } from "zustand/middleware"
 import { shallow } from "zustand/shallow"
+import type { UseBoundStoreWithEqualityFn } from "zustand/traditional"
 import { createWithEqualityFn } from "zustand/traditional"
 
 declare const window: any
@@ -28,6 +29,23 @@ export const dbStorage: PersistStorage<any> = {
     await del(name)
   },
 }
+export const localStorage: PersistStorage<any> = {
+  getItem: (name: string) => {
+    const data = window.localStorage.getItem(name)
+
+    if (data === null) {
+      return null
+    }
+
+    return JSON.parse(data)
+  },
+  setItem: (name, value) => {
+    window.localStorage.setItem(name, JSON.stringify(value))
+  },
+  removeItem: (name: string) => {
+    window.localStorage.removeItem(name)
+  },
+}
 enableMapSet()
 export const zustandStorage = dbStorage
 
@@ -41,17 +59,21 @@ export const createZustandStore =
     > = StateCreator<S, [["zustand/persist", unknown]], []>,
   >(
     name: string,
-    options?: Partial<PersistOptions<S>>,
+    options?: Partial<PersistOptions<S> & {
+      disablePersist?: boolean
+    }>,
   ) =>
     (store: T) => {
-      const newStore = createWithEqualityFn(
-        persist<S>(store, {
-          name,
-          storage: zustandStorage,
-          ...options,
-        }),
-        shallow,
-      )
+      const newStore = !options?.disablePersist ?
+        createWithEqualityFn(
+          persist<S>(store, {
+            name,
+            storage: zustandStorage,
+            ...options,
+          }),
+          shallow,
+        ) :
+        createWithEqualityFn(store as any, shallow)
 
       window.store = window.store || {}
       Object.assign(window.store, {
@@ -59,7 +81,9 @@ export const createZustandStore =
           return newStore.getState()
         },
       })
-      return newStore
+      return newStore as unknown as UseBoundStoreWithEqualityFn<StoreApi<
+        S
+      >>
     }
 type FunctionKeys<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
