@@ -7,7 +7,7 @@ import type { FeedActions, FeedState } from "./types"
 export const useFeedStore = createZustandStore<FeedState & FeedActions>(
   "feed",
   {
-    version: 1,
+    version: 2,
   },
 )((set) => ({
   feeds: {},

@@ -7,14 +7,21 @@ import { merge, omit } from "lodash-es"
 
 import { feedActions } from "../feed"
 import { unreadActions } from "../unread"
-import { createZustandStore, getStoreActions } from "../utils/helper"
+import {
+  createStateTransformer,
+  createZustandStore,
+  getStoreActions,
+} from "../utils/helper"
 import type { EntryActions, EntryState } from "./types"
 
 export const useEntryStore = createZustandStore<EntryState & EntryActions>(
   "entry",
   {
-    version: 1,
-    disablePersist: true,
+    version: 2,
+
+    ...createStateTransformer({
+      internal_feedId2entryIdSet: "set",
+    }),
   },
 )((set, get) => ({
   entries: {},

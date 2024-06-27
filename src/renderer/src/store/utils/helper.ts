@@ -1,34 +1,67 @@
 import { del, get, set } from "idb-keyval"
 import { enableMapSet } from "immer"
-import superjson from "superjson" //  can use anything: serialize-javascript, devalue, etc.
+import { stringifyAsync } from "yieldable-json"
 import type { StateCreator, StoreApi } from "zustand"
-import type {
-  PersistOptions,
-  PersistStorage,
-} from "zustand/middleware"
+import type { PersistOptions, PersistStorage } from "zustand/middleware"
 import { persist } from "zustand/middleware"
 import { shallow } from "zustand/shallow"
 import type { UseBoundStoreWithEqualityFn } from "zustand/traditional"
 import { createWithEqualityFn } from "zustand/traditional"
 
 declare const window: any
-export const dbStorage: PersistStorage<any> = {
-  getItem: async (name: string) => {
-    const data = (await get(name)) || null
+const stringifyAsyncPromisify = (data: any) => {
+  const nextData = { ...data }
+  nextData.state = { ...nextData.state }
+  for (const key in nextData.state) {
+    if (typeof nextData.state[key] === "function") {
+      delete nextData.state[key]
+    }
+  }
 
+  return new Promise((resolve) =>
+    stringifyAsync(nextData, (err, data) => {
+      if (err) {
+        return resolve(null)
+      }
+      resolve(data)
+    }),
+  )
+}
+
+globalThis.setImmediate =
+  globalThis.setImmediate || ((cb) => setTimeout(cb, 0))
+
+type StorageSerializerOptions = {
+  deserialize: (data: any) => any
+  serialize: (data: any) => any
+}
+
+const createDbStorage: (
+  options?: StorageSerializerOptions
+) => PersistStorage<any> = (options) => ({
+  getItem: async (name: string) => {
+    const { deserialize } = options || {}
+    const data = (await get(name)) || null
     if (data === null) {
       return null
     }
 
-    return superjson.parse(data)
+    const parsed = JSON.parse(data)
+
+    return deserialize ? deserialize(parsed) : parsed
   },
   setItem: async (name, value) => {
-    await set(name, superjson.stringify(value))
+    const { serialize } = options || {}
+
+    await set(
+      name,
+      await stringifyAsyncPromisify(serialize ? serialize(value) : value),
+    )
   },
   removeItem: async (name: string): Promise<void> => {
     await del(name)
   },
-}
+})
 export const localStorage: PersistStorage<any> = {
   getItem: (name: string) => {
     const data = window.localStorage.getItem(name)
@@ -47,7 +80,7 @@ export const localStorage: PersistStorage<any> = {
   },
 }
 enableMapSet()
-export const zustandStorage = dbStorage
+const zustandStorage = createDbStorage()
 
 export const createZustandStore =
   <
@@ -59,16 +92,34 @@ export const createZustandStore =
     > = StateCreator<S, [["zustand/persist", unknown]], []>,
   >(
     name: string,
-    options?: Partial<PersistOptions<S> & {
-      disablePersist?: boolean
-    }>,
+    options?: Partial<
+      PersistOptions<S> & {
+        disablePersist?: boolean
+        transformWriteObject?: (data: { state: S }) => any
+        transformReadObject?: (data: { state: S }) => any
+      }
+    >,
   ) =>
     (store: T) => {
-      const newStore = !options?.disablePersist ?
+      const {
+        disablePersist = false,
+        transformWriteObject,
+        transformReadObject,
+      } = options || {}
+
+      const usedStorage =
+      transformWriteObject && transformReadObject ?
+        createDbStorage({
+          serialize: transformWriteObject,
+          deserialize: transformReadObject,
+        }) :
+        zustandStorage
+
+      const newStore = !disablePersist ?
         createWithEqualityFn(
           persist<S>(store, {
             name,
-            storage: zustandStorage,
+            storage: usedStorage,
             ...options,
           }),
           shallow,
@@ -81,9 +132,7 @@ export const createZustandStore =
           return newStore.getState()
         },
       })
-      return newStore as unknown as UseBoundStoreWithEqualityFn<StoreApi<
-        S
-      >>
+      return newStore as unknown as UseBoundStoreWithEqualityFn<StoreApi<S>>
     }
 type FunctionKeys<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
@@ -103,3 +152,43 @@ export const getStoreActions = <T extends { getState: () => any }>(
 
   return actions as any
 }
+
+export const createStateTransformer = (
+  typeMap: Record<string, "set" | "map">,
+) => ({
+  transformReadObject: (data) => {
+    for (const key in typeMap) {
+      if (!data.state[key]) {
+        continue
+      }
+
+      if (typeMap[key] === "set") {
+        data.state[key] = new Set(data.state[key])
+      } else if (typeMap[key] === "map") {
+        data.state[key] = new Map(
+          data.state[key],
+        )
+      }
+    }
+
+    return data
+  },
+  transformWriteObject: (data) => {
+    const nextData = { ...data }
+    nextData.state = { ...nextData.state }
+
+    for (const key in typeMap) {
+      if (!nextData.state[key]) {
+        continue
+      }
+
+      if (typeMap[key] === "set") {
+        nextData.state[key] = Array.from(nextData.state[key])
+      } else if (typeMap[key] === "map") {
+        nextData.state[key] = Object.fromEntries(nextData.state[key])
+      }
+    }
+
+    return nextData
+  },
+})
