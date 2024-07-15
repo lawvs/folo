@@ -30,7 +30,7 @@ export function getEntriesParams({
   if (level === levels.folder) {
     if (id === FEED_COLLECTION_LIST) {
       params.collected = true
-    } else {
+    } else if (id) {
       params.feedIdList = `${id}`.split(",")
     }
   } else if (level === levels.feed) {
